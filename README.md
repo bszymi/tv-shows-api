@@ -347,11 +347,72 @@ The script handles:
 - ECS service updates with health checks
 - Rollback to previous task definition revisions
 
+## Authentication
+
+### Basic HTTP Authentication
+
+The API uses HTTP Basic Authentication to secure access to endpoints.
+
+#### Configuration
+
+Authentication credentials can be configured via:
+
+1. **Environment Variables** (recommended for production):
+   ```bash
+   export API_USERNAME=your_username
+   export API_PASSWORD=your_secure_password
+   ```
+
+2. **Rails Credentials** (encrypted):
+   ```bash
+   rails credentials:edit
+   ```
+   ```yaml
+   api_username: your_username
+   api_password: your_secure_password
+   ```
+
+3. **Default Values** (development only):
+   - Username: `api_user`
+   - Password: `secure_password`
+
+#### Usage
+
+Include HTTP Basic Authentication header in all API requests:
+
+```bash
+# Using curl
+curl -u api_user:secure_password http://localhost:3000/api/v1/tv_shows
+
+# Using Authorization header
+curl -H "Authorization: Basic YXBpX3VzZXI6c2VjdXJlX3Bhc3N3b3Jk" http://localhost:3000/api/v1/tv_shows
+
+# Using HTTPie
+http -a api_user:secure_password localhost:3000/api/v1/tv_shows
+```
+
+#### Development Mode
+
+In development, authentication can be bypassed by adding `?skip_auth=true` parameter:
+
+```bash
+curl http://localhost:3000/api/v1/tv_shows?skip_auth=true
+```
+
+#### Security Features
+
+- **Secure string comparison**: Prevents timing attacks using `ActiveSupport::SecurityUtils.secure_compare`
+- **Proper HTTP status codes**: Returns 401 Unauthorized with WWW-Authenticate header
+- **Environment-based configuration**: Supports different credentials per environment
+- **Base64 encoding**: Standard HTTP Basic Authentication format
+
 ## API Documentation
 
 ### GET /api/v1/tv_shows
 
 Retrieve TV shows with filtering and pagination.
+
+**Authentication Required**: HTTP Basic Authentication
 
 #### Query Parameters
 
@@ -403,9 +464,9 @@ Retrieve TV shows with filtering and pagination.
 
 #### Examples
 
-- Get all shows: `GET /api/v1/tv_shows`
-- Filter by distributor: `GET /api/v1/tv_shows?distributor=CBS`
-- Filter by country: `GET /api/v1/tv_shows?country=US`
-- Filter by rating: `GET /api/v1/tv_shows?min_rating=8.0`
-- Combined filters: `GET /api/v1/tv_shows?distributor=CBS&country=US&min_rating=7.5`
-- Pagination: `GET /api/v1/tv_shows?page=2&per_page=10`
+- Get all shows: `curl -u api_user:secure_password /api/v1/tv_shows`
+- Filter by distributor: `curl -u api_user:secure_password /api/v1/tv_shows?distributor=CBS`
+- Filter by country: `curl -u api_user:secure_password /api/v1/tv_shows?country=US`
+- Filter by rating: `curl -u api_user:secure_password /api/v1/tv_shows?min_rating=8.0`
+- Combined filters: `curl -u api_user:secure_password /api/v1/tv_shows?distributor=CBS&country=US&min_rating=7.5`
+- Pagination: `curl -u api_user:secure_password /api/v1/tv_shows?page=2&per_page=10`

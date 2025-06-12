@@ -1,6 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe 'Api::V1::TvShows', type: :request do
+  # Authentication headers for tests
+  let(:auth_header) { "Basic #{Base64.encode64('api_user:secure_password').strip}" }
+  let(:headers) { { 'Authorization' => auth_header } }
   describe 'GET /api/v1/tv_shows' do
     let!(:distributor1) { Distributor.create!(name: 'CBS') }
     let!(:distributor2) { Distributor.create!(name: 'NBC') }
@@ -40,7 +43,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
     context 'without filters' do
       it 'returns all TV shows with pagination' do
-        get '/api/v1/tv_shows'
+        get '/api/v1/tv_shows', headers: headers
         
         expect(response).to have_http_status(:ok)
         
@@ -62,7 +65,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
       end
 
       it 'includes associated data' do
-        get '/api/v1/tv_shows'
+        get '/api/v1/tv_shows', headers: headers
         
         json_response = JSON.parse(response.body)
         first_show = json_response['tv_shows'][0]
@@ -95,7 +98,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
     context 'with distributor filter' do
       it 'returns shows for specified distributor' do
-        get '/api/v1/tv_shows', params: { distributor: 'CBS' }
+        get '/api/v1/tv_shows', headers: headers, params: { distributor: 'CBS' }
         
         expect(response).to have_http_status(:ok)
         
@@ -108,7 +111,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
     context 'with country filter' do
       it 'returns shows for specified country' do
-        get '/api/v1/tv_shows', params: { country: 'UK' }
+        get '/api/v1/tv_shows', headers: headers, params: { country: 'UK' }
         
         expect(response).to have_http_status(:ok)
         
@@ -120,7 +123,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
     context 'with rating filter' do
       it 'returns shows with rating above minimum' do
-        get '/api/v1/tv_shows', params: { min_rating: 8.0 }
+        get '/api/v1/tv_shows', headers: headers, params: { min_rating: 8.0 }
         
         expect(response).to have_http_status(:ok)
         
@@ -144,7 +147,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
       end
 
       it 'respects per_page parameter' do
-        get '/api/v1/tv_shows', params: { per_page: 5 }
+        get '/api/v1/tv_shows', headers: headers, params: { per_page: 5 }
         
         expect(response).to have_http_status(:ok)
         
@@ -159,7 +162,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
       end
 
       it 'respects page parameter' do
-        get '/api/v1/tv_shows', params: { per_page: 5, page: 2 }
+        get '/api/v1/tv_shows', headers: headers, params: { per_page: 5, page: 2 }
         
         expect(response).to have_http_status(:ok)
         
@@ -187,7 +190,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
       let!(:release_date3) { ReleaseDate.create!(tv_show: show3, country: 'US', release_date: Date.parse('2021-01-01')) }
 
       it 'applies all filters correctly' do
-        get '/api/v1/tv_shows', params: { distributor: 'CBS', country: 'US', min_rating: 8.0 }
+        get '/api/v1/tv_shows', headers: headers, params: { distributor: 'CBS', country: 'US', min_rating: 8.0 }
         
         expect(response).to have_http_status(:ok)
         

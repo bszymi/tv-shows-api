@@ -1,4 +1,5 @@
 class Api::V1::TvShowsController < ApplicationController
+  include ApiAuthentication
   def index
     @tv_shows = TvShow.includes(:distributor, :release_dates)
                      .order(:name, :id) # Deterministic ordering
