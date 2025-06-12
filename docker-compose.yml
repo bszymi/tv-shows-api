@@ -32,5 +32,18 @@ services:
       REDIS_URL: redis://redis:6379/0
       RAILS_ENV: development
 
+  sidekiq:
+    build: .
+    command: bundle exec sidekiq
+    volumes:
+      - .:/rails
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql://tv_shows_api:password@db:5432/tv_shows_api_development
+      REDIS_URL: redis://redis:6379/0
+      RAILS_ENV: development
+
 volumes:
   postgres_data:

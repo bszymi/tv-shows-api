@@ -49,6 +49,7 @@ docker-compose exec web rails db:migrate
 ```
 
 3. Access the application at http://localhost:3000
+   - Sidekiq web interface: http://localhost:3000/sidekiq
 
 4. Stop services:
 ```bash
@@ -128,6 +129,20 @@ docker-compose down
 - Creates distributors, TV shows, and release dates in a single transaction
 - Provides detailed statistics on processing results (created, updated, errors)
 - Graceful error handling with detailed error reporting
+
+## Background Jobs
+
+### Sidekiq Configuration
+- Uses Redis for job queue storage
+- Configured with 3 retries for failed jobs
+- Web interface available at `/sidekiq` for monitoring
+
+### TvShowsSyncWorker
+- Scheduled to run daily at 2 AM UTC using sidekiq-cron
+- Fetches latest TV show data from TVMaze API
+- Persists data using the TvShowPersistenceService
+- Comprehensive logging of sync progress and errors
+- Graceful error handling with job retries
 
 ## API Documentation
 
