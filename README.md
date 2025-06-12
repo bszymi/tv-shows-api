@@ -37,7 +37,23 @@ rails server
 
 ### Docker Setup
 
-Instructions will be added in the next commit.
+1. Build and start services:
+```bash
+docker-compose up --build
+```
+
+2. In another terminal, create and migrate the database:
+```bash
+docker-compose exec web rails db:create
+docker-compose exec web rails db:migrate
+```
+
+3. Access the application at http://localhost:3000
+
+4. Stop services:
+```bash
+docker-compose down
+```
 
 ## API Documentation
 
