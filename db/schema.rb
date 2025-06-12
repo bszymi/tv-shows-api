@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_12_231552) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_12_232948) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -27,6 +27,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_12_231552) do
     t.date "release_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["country", "release_date"], name: "index_release_dates_on_country_and_release_date"
     t.index ["country"], name: "index_release_dates_on_country"
     t.index ["release_date"], name: "index_release_dates_on_release_date"
     t.index ["tv_show_id", "country"], name: "index_release_dates_on_tv_show_id_and_country", unique: true
@@ -48,8 +49,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_12_231552) do
     t.bigint "distributor_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["distributor_id", "rating"], name: "index_tv_shows_on_distributor_id_and_rating", where: "(rating IS NOT NULL)"
     t.index ["distributor_id"], name: "index_tv_shows_on_distributor_id"
     t.index ["external_id"], name: "index_tv_shows_on_external_id", unique: true
+    t.index ["language"], name: "index_tv_shows_on_language"
+    t.index ["name"], name: "index_tv_shows_on_name"
+    t.index ["premiered"], name: "index_tv_shows_on_premiered"
+    t.index ["rating"], name: "index_tv_shows_on_rating", where: "(rating IS NOT NULL)"
+    t.index ["status", "rating"], name: "index_tv_shows_on_status_and_rating", where: "(rating IS NOT NULL)"
+    t.index ["status"], name: "index_tv_shows_on_status"
   end
 
   add_foreign_key "release_dates", "tv_shows"

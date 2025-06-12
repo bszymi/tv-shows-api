@@ -144,6 +144,87 @@ docker-compose down
 - Comprehensive logging of sync progress and errors
 - Graceful error handling with job retries
 
+## Database Optimization
+
+### Performance Indices
+- **rating**: Partial index for non-null ratings to optimize rating-based filters
+- **status**: Index on show status for filtering by running/ended shows
+- **language**: Index for language-based filtering
+- **premiered**: Index for date-range queries and sorting
+- **name**: Index for name-based searches and sorting
+- **composite indices**: 
+  - `[status, rating]` for combined status and rating queries
+  - `[distributor_id, rating]` for distributor-specific rating queries
+  - `[country, release_date]` for country-specific release queries
+
+### Analytical Query Examples
+
+The application includes complex analytical queries demonstrating PostgreSQL capabilities:
+
+#### 1. Distributor Performance Analysis
+```sql
+SELECT 
+  d.name as distributor_name,
+  COUNT(t.id) as total_shows,
+  AVG(t.rating) as avg_rating,
+  MIN(t.rating) as min_rating,
+  MAX(t.rating) as max_rating
+FROM distributors d
+JOIN tv_shows t ON d.id = t.distributor_id
+WHERE t.rating IS NOT NULL
+GROUP BY d.id, d.name
+HAVING COUNT(t.id) >= 3
+ORDER BY avg_rating DESC;
+```
+
+#### 2. Time Series Analysis with Window Functions
+```sql
+WITH decade_stats AS (
+  SELECT 
+    EXTRACT(DECADE FROM premiered) * 10 as decade,
+    COUNT(*) as show_count
+  FROM tv_shows 
+  WHERE premiered IS NOT NULL
+  GROUP BY EXTRACT(DECADE FROM premiered)
+)
+SELECT 
+  decade,
+  show_count,
+  SUM(show_count) OVER (ORDER BY decade ROWS UNBOUNDED PRECEDING) as running_total,
+  ROUND(100.0 * show_count / SUM(show_count) OVER (), 2) as percentage
+FROM decade_stats
+ORDER BY decade;
+```
+
+#### 3. CTEs and Advanced Aggregations
+```sql
+WITH country_rankings AS (
+  SELECT 
+    rd.country,
+    COUNT(DISTINCT rd.tv_show_id) as unique_shows,
+    AVG(ts.rating) FILTER (WHERE ts.rating IS NOT NULL) as avg_rating
+  FROM release_dates rd
+  JOIN tv_shows ts ON rd.tv_show_id = ts.id
+  GROUP BY rd.country
+)
+SELECT 
+  country,
+  unique_shows,
+  PERCENT_RANK() OVER (ORDER BY unique_shows) as percentile_rank
+FROM country_rankings
+WHERE unique_shows >= 5
+ORDER BY unique_shows DESC;
+```
+
+### Running Analytics
+```bash
+# Generate sample data for testing
+rails analytics:generate_sample_data
+
+# Run analytical query examples
+rails analytics:run_examples
+```
+
 ## API Documentation
 
 ### GET /api/v1/tv_shows
