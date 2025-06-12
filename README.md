@@ -113,6 +113,14 @@ docker-compose down
 - Validates country and release_date presence
 - Validates country uniqueness per tv_show
 
+## Services
+
+### TvMazeApiService
+- Fetches TV show data from TVMaze API (https://api.tvmaze.com/schedule/full)
+- Handles HTTP errors and timeouts gracefully
+- Returns structured response with success/error status
+- Includes comprehensive error logging
+
 ## API Documentation
 
 API endpoints and usage will be documented as they are implemented.
