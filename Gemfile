@@ -61,4 +61,5 @@ group :development, :test do
   gem "faker"
   gem "shoulda-matchers"
   gem "webmock"
+  gem "rspec_junit_formatter"
 end

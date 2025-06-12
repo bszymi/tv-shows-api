@@ -264,6 +264,89 @@ aws ecs update-service --cluster tv-shows-api --service tv-shows-api-web --force
 
 See the [full deployment guide](docs/aws-deployment.md) for detailed setup instructions, infrastructure templates, and best practices.
 
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The project includes a comprehensive CI/CD pipeline using GitHub Actions:
+
+#### Pipeline Stages
+
+1. **Test Stage**
+   - Runs RSpec tests with PostgreSQL and Redis services
+   - Generates test reports in JUnit XML format
+   - Covers all application functionality including background jobs
+
+2. **Lint Stage**
+   - Runs RuboCop for code style consistency
+   - Enforces Rails best practices and conventions
+
+3. **Security Stage**
+   - Runs Brakeman security scanner
+   - Generates security vulnerability reports
+
+4. **Build Stage**
+   - Builds multi-platform Docker images (AMD64/ARM64)
+   - Pushes to GitHub Container Registry
+   - Uses Docker layer caching for faster builds
+
+5. **Deploy Stages**
+   - **Staging**: Auto-deploys on main branch pushes
+   - **Production**: Deploys on GitHub releases
+   - Includes environment protection rules
+
+6. **SBOM Generation**
+   - Generates Software Bill of Materials for releases
+   - Enables supply chain security tracking
+
+#### Key Features
+
+- **Parallel execution** of test, lint, and security jobs
+- **Multi-platform** Docker builds (AMD64/ARM64)
+- **Artifact management** for test results and security reports
+- **Environment protection** with approval workflows
+- **Automated deployments** with rollback capabilities
+- **Container scanning** and vulnerability assessment
+
+#### Usage
+
+```bash
+# Trigger CI on pull request
+git checkout -b feature/new-feature
+git push origin feature/new-feature
+
+# Deploy to staging (automatic on main branch)
+git checkout main
+git merge feature/new-feature
+git push origin main
+
+# Deploy to production (create release)
+git tag v1.0.0
+git push origin v1.0.0
+# Create GitHub release from tag
+```
+
+### Deployment Script
+
+A comprehensive deployment script is provided at `scripts/deploy.sh`:
+
+```bash
+# Deploy to staging
+./scripts/deploy.sh deploy staging v1.0.0
+
+# Deploy to production  
+./scripts/deploy.sh deploy production v1.0.0
+
+# Rollback to previous version
+./scripts/deploy.sh rollback 123
+```
+
+The script handles:
+- Docker image building and ECR pushing
+- Database migrations as one-time ECS tasks
+- ECS service updates with health checks
+- Rollback to previous task definition revisions
+
 ## API Documentation
 
 ### GET /api/v1/tv_shows
