@@ -55,6 +55,44 @@ docker-compose exec web rails db:migrate
 docker-compose down
 ```
 
+## Database Schema
+
+### Tables
+
+1. **distributors**
+   - `id` (primary key)
+   - `name` (string, unique)
+   - `created_at`, `updated_at`
+
+2. **tv_shows**
+   - `id` (primary key)
+   - `external_id` (integer, unique) - TVMaze show ID
+   - `name` (string)
+   - `show_type` (string) - e.g., "Scripted", "Animation"
+   - `language` (string)
+   - `status` (string) - e.g., "Running", "Ended"
+   - `runtime` (integer) - in minutes
+   - `premiered` (date)
+   - `summary` (text)
+   - `official_site` (string)
+   - `image_url` (string)
+   - `rating` (decimal, precision: 3, scale: 1)
+   - `distributor_id` (foreign key)
+   - `created_at`, `updated_at`
+
+3. **release_dates**
+   - `id` (primary key)
+   - `tv_show_id` (foreign key)
+   - `country` (string)
+   - `release_date` (date)
+   - `created_at`, `updated_at`
+   - Unique constraint on [tv_show_id, country]
+
+### Indices
+- distributors: name (unique)
+- tv_shows: external_id (unique), distributor_id
+- release_dates: country, release_date, [tv_show_id, country] (unique)
+
 ## API Documentation
 
 API endpoints and usage will be documented as they are implemented.
