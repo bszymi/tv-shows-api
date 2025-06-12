@@ -470,3 +470,222 @@ Retrieve TV shows with filtering and pagination.
 - Filter by rating: `curl -u api_user:secure_password /api/v1/tv_shows?min_rating=8.0`
 - Combined filters: `curl -u api_user:secure_password /api/v1/tv_shows?distributor=CBS&country=US&min_rating=7.5`
 - Pagination: `curl -u api_user:secure_password /api/v1/tv_shows?page=2&per_page=10`
+
+## Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+bundle exec rspec
+
+# Run specific test files
+bundle exec rspec spec/models/
+bundle exec rspec spec/services/
+bundle exec rspec spec/requests/
+
+# Run with coverage (if simplecov is added)
+COVERAGE=true bundle exec rspec
+
+# Run tests in parallel (for large test suites)
+bundle exec parallel_rspec spec/
+```
+
+### Test Coverage
+
+The application includes comprehensive tests covering:
+
+- **Model validations and associations** (17 examples)
+- **Service classes** with mocked external dependencies (32 examples)
+- **API endpoints** with authentication and error handling (15 examples)
+- **Background jobs** and worker functionality (5 examples)
+- **Database analytical queries** (3 examples)
+
+**Total: 55 test examples, 0 failures**
+
+### Test Types
+
+1. **Unit Tests**: Models, services, and utilities
+2. **Integration Tests**: API endpoints with full request/response cycle
+3. **Service Tests**: External API integration with mocked responses
+4. **Worker Tests**: Background job processing and error handling
+
+## Performance Considerations
+
+### Database Performance
+
+- **Optimized indices**: 12 strategic indices for common query patterns
+- **Connection pooling**: Configured for concurrent requests
+- **Query optimization**: Uses `includes()` to prevent N+1 queries
+- **Pagination**: Kaminari gem with configurable page sizes
+
+### Application Performance
+
+- **Background processing**: Sidekiq for non-blocking operations
+- **Caching strategy**: Redis for session storage and job queues
+- **Database optimization**: Partial indices and composite keys
+- **API serialization**: ActiveModelSerializers for consistent JSON output
+
+### Scaling Considerations
+
+- **Horizontal scaling**: Stateless application design
+- **Database scaling**: Read replicas and connection pooling
+- **Queue scaling**: Multiple Sidekiq workers and queue priorities
+- **Cache scaling**: Redis clustering for high availability
+
+## Monitoring and Observability
+
+### Logging
+
+- **Structured logging**: JSON format for production environments
+- **Log levels**: Configurable per environment
+- **Request logging**: All API requests with response times
+- **Background job logging**: Job execution and failure tracking
+
+### Metrics
+
+- **Application metrics**: Custom CloudWatch metrics
+- **Database metrics**: Query performance and connection stats
+- **Queue metrics**: Job processing rates and queue depths
+- **System metrics**: CPU, memory, and disk utilization
+
+### Health Checks
+
+- **Application health**: `/up` endpoint for load balancer checks
+- **Database connectivity**: Verified in health checks
+- **Redis connectivity**: Queue system health verification
+- **External API health**: TVMaze API connection status
+
+## Security
+
+### Data Protection
+
+- **Secrets management**: Environment variables and Rails credentials
+- **SQL injection prevention**: Parameterized queries and ActiveRecord
+- **XSS prevention**: JSON API with proper content types
+- **Timing attack prevention**: Secure string comparisons
+
+### Network Security
+
+- **Authentication**: HTTP Basic Authentication for all API endpoints
+- **HTTPS enforcement**: SSL/TLS in production environments
+- **CORS configuration**: Controlled cross-origin access
+- **Rate limiting**: Configurable request throttling (can be added)
+
+### Infrastructure Security
+
+- **VPC isolation**: Private subnets for database and cache
+- **Security groups**: Minimal required port access
+- **IAM roles**: Principle of least privilege
+- **Encryption**: At-rest and in-transit data encryption
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database connection errors**
+   ```bash
+   # Check database configuration
+   rails db:migrate:status
+   
+   # Test connection
+   rails runner "puts ActiveRecord::Base.connection.execute('SELECT 1')"
+   ```
+
+2. **Redis connection issues**
+   ```bash
+   # Test Redis connection
+   rails runner "puts Sidekiq.redis(&:ping)"
+   
+   # Check Sidekiq status
+   bundle exec sidekiq
+   ```
+
+3. **API authentication failures**
+   ```bash
+   # Test with curl
+   curl -u api_user:secure_password http://localhost:3000/api/v1/tv_shows
+   
+   # Check environment variables
+   echo $API_USERNAME $API_PASSWORD
+   ```
+
+### Debug Mode
+
+Enable debug logging in development:
+
+```ruby
+# config/environments/development.rb
+config.log_level = :debug
+```
+
+### Performance Debugging
+
+```bash
+# Database query analysis
+rails runner "puts TvShow.by_rating(8.0).to_sql"
+
+# Explain query plans
+rails runner "puts TvShow.joins(:distributor).explain"
+
+# Memory profiling (add memory_profiler gem)
+bundle exec ruby -r memory_profiler script/profile_memory.rb
+```
+
+## Contributing
+
+### Development Workflow
+
+1. **Fork and clone** the repository
+2. **Create feature branch** from main
+3. **Write tests** for new functionality
+4. **Implement changes** following existing patterns
+5. **Run test suite** and ensure all tests pass
+6. **Submit pull request** with clear description
+
+### Code Standards
+
+- **RuboCop compliance**: Follow Rails omakase style guide
+- **Test coverage**: Maintain high test coverage for new code
+- **Documentation**: Update README for significant changes
+- **Security**: Run Brakeman security scanner before commits
+
+### Pull Request Process
+
+1. All CI checks must pass (tests, linting, security)
+2. Code review by at least one maintainer
+3. Documentation updates included
+4. No merge conflicts with main branch
+
+## Trade-offs and Design Decisions
+
+### Architecture Decisions
+
+1. **Rails API-only mode**: Optimized for API performance, excludes unused middleware
+2. **PostgreSQL choice**: ACID compliance, JSON support, and advanced query capabilities
+3. **Sidekiq for background jobs**: Reliable, Redis-based job processing with good monitoring
+4. **Basic HTTP authentication**: Simple, standards-compliant, suitable for service-to-service communication
+
+### Data Model Trade-offs
+
+1. **Separate release_dates table**: Normalized design allows multiple release dates per show
+2. **Denormalized distributor data**: Trades storage for query performance
+3. **External ID storage**: Maintains reference to TVMaze API for future reconciliation
+4. **Rating as decimal**: Preserves precision for analytical queries
+
+### Performance Trade-offs
+
+1. **Eager loading associations**: Prevents N+1 queries at cost of memory usage
+2. **Database indices**: Improved query performance with increased storage overhead
+3. **Pagination default**: Balances response time with data completeness
+4. **Background processing**: Better user experience with eventual consistency
+
+### Security Trade-offs
+
+1. **Basic auth over JWT**: Simpler implementation, suitable for server-to-server
+2. **Environment-based secrets**: Balance between security and deployment simplicity
+3. **Development auth bypass**: Convenience vs. production-like testing
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
