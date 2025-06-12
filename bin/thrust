@@ -1,0 +1,5 @@
+#!3.4.2
+require "rubygems"
+require "bundler/setup"
+
+load Gem.bin_path("thruster", "thrust")
