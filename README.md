@@ -93,6 +93,26 @@ docker-compose down
 - tv_shows: external_id (unique), distributor_id
 - release_dates: country, release_date, [tv_show_id, country] (unique)
 
+## Models and Associations
+
+### Distributor
+- `has_many :tv_shows, dependent: :destroy`
+- Validates name presence and uniqueness
+
+### TvShow
+- `belongs_to :distributor`
+- `has_many :release_dates, dependent: :destroy`
+- Validates external_id presence and uniqueness
+- Validates name presence
+- Validates rating between 0-10 (optional)
+- Validates runtime > 0 (optional)
+- Scopes: `by_distributor`, `by_country`, `by_rating`
+
+### ReleaseDate
+- `belongs_to :tv_show`
+- Validates country and release_date presence
+- Validates country uniqueness per tv_show
+
 ## API Documentation
 
 API endpoints and usage will be documented as they are implemented.
