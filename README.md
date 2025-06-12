@@ -146,4 +146,63 @@ docker-compose down
 
 ## API Documentation
 
-API endpoints and usage will be documented as they are implemented.
+### GET /api/v1/tv_shows
+
+Retrieve TV shows with filtering and pagination.
+
+#### Query Parameters
+
+- `page` (integer, optional): Page number for pagination (default: 1)
+- `per_page` (integer, optional): Number of items per page (default: 25, max: 100)
+- `distributor` (string, optional): Filter by distributor name (e.g., "CBS", "NBC")
+- `country` (string, optional): Filter by release country code (e.g., "US", "UK")
+- `min_rating` (decimal, optional): Filter shows with rating >= this value
+
+#### Response Format
+
+```json
+{
+  "tv_shows": [
+    {
+      "id": 1,
+      "external_id": 123,
+      "name": "Show Name",
+      "show_type": "Scripted",
+      "language": "English",
+      "status": "Running",
+      "runtime": 60,
+      "premiered": "2020-01-01",
+      "summary": "Show description",
+      "official_site": "https://example.com",
+      "image_url": "https://example.com/image.jpg",
+      "rating": "8.5",
+      "distributor": {
+        "id": 1,
+        "name": "CBS"
+      },
+      "release_dates": [
+        {
+          "id": 1,
+          "country": "US",
+          "release_date": "2020-01-01"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_count": 125,
+    "per_page": 25
+  }
+}
+```
+
+#### Examples
+
+- Get all shows: `GET /api/v1/tv_shows`
+- Filter by distributor: `GET /api/v1/tv_shows?distributor=CBS`
+- Filter by country: `GET /api/v1/tv_shows?country=US`
+- Filter by rating: `GET /api/v1/tv_shows?min_rating=8.0`
+- Combined filters: `GET /api/v1/tv_shows?distributor=CBS&country=US&min_rating=7.5`
+- Pagination: `GET /api/v1/tv_shows?page=2&per_page=10`
