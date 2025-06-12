@@ -225,6 +225,45 @@ rails analytics:generate_sample_data
 rails analytics:run_examples
 ```
 
+## Deployment
+
+### AWS Deployment
+
+For production deployment on AWS, see the comprehensive [AWS Deployment Guide](docs/aws-deployment.md) which covers:
+
+#### Recommended Architecture
+- **Compute**: ECS with Fargate for serverless containers
+- **Database**: RDS PostgreSQL with Multi-AZ deployment
+- **Cache/Queue**: ElastiCache Redis for Sidekiq
+- **Load Balancer**: Application Load Balancer with health checks
+- **Monitoring**: CloudWatch + custom metrics
+- **Security**: VPC, Security Groups, Secrets Manager
+
+#### Key Features
+- Auto-scaling based on CPU/memory utilization
+- High availability with multi-AZ deployment
+- Zero-downtime deployments with blue/green strategy
+- Comprehensive monitoring and alerting
+- Cost optimization for different environments
+- Disaster recovery and backup strategies
+
+#### Quick Start
+```bash
+# Build and push to ECR
+docker build -t tv-shows-api .
+docker tag tv-shows-api:latest ACCOUNT.dkr.ecr.REGION.amazonaws.com/tv-shows-api:latest
+docker push ACCOUNT.dkr.ecr.REGION.amazonaws.com/tv-shows-api:latest
+
+# Deploy with ECS
+aws ecs update-service --cluster tv-shows-api --service tv-shows-api-web --force-new-deployment
+```
+
+#### Estimated Costs
+- **Development**: ~$50-80/month
+- **Production**: ~$300-500/month
+
+See the [full deployment guide](docs/aws-deployment.md) for detailed setup instructions, infrastructure templates, and best practices.
+
 ## API Documentation
 
 ### GET /api/v1/tv_shows
