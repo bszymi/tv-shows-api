@@ -121,6 +121,14 @@ docker-compose down
 - Returns structured response with success/error status
 - Includes comprehensive error logging
 
+### TvShowPersistenceService
+- Processes and persists TV show data from API responses
+- Implements idempotent operations using `find_or_initialize_by` and `find_or_create_by`
+- Handles multiple data formats from TVMaze API
+- Creates distributors, TV shows, and release dates in a single transaction
+- Provides detailed statistics on processing results (created, updated, errors)
+- Graceful error handling with detailed error reporting
+
 ## API Documentation
 
 API endpoints and usage will be documented as they are implemented.
