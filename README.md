@@ -137,6 +137,52 @@ docker-compose down
 - Configured with 3 retries for failed jobs
 - Web interface available at `/sidekiq` for monitoring
 
+#### Accessing Sidekiq Web UI
+
+The Sidekiq Web UI is accessible in development mode for monitoring background jobs:
+
+**Development/Test Access:**
+```bash
+# Start the Rails server
+rails server
+
+# Access Sidekiq Web UI
+open http://localhost:3000/sidekiq
+```
+
+**Features Available:**
+- Real-time job monitoring (queued, processing, failed)
+- Job retry functionality
+- Queue statistics and metrics
+- Scheduled job management (sidekiq-cron)
+- Redis connection information
+
+**Important Notes:**
+- Session middleware is only enabled in development and test environments
+- In production, implement proper authentication before enabling the Web UI
+- The API remains fully functional without sessions - they're only needed for the Web UI
+
+**Production Security:**
+For production environments, secure the Sidekiq Web UI with authentication:
+
+```ruby
+# config/routes.rb (production example)
+require 'sidekiq/web'
+
+# Use HTTP Basic Auth or integrate with your authentication system
+Sidekiq::Web.use Rack::Auth::Basic do |username, password|
+  ActiveSupport::SecurityUtils.secure_compare(
+    ::Digest::SHA256.hexdigest(username),
+    ::Digest::SHA256.hexdigest(ENV["SIDEKIQ_USERNAME"])
+  ) && ActiveSupport::SecurityUtils.secure_compare(
+    ::Digest::SHA256.hexdigest(password),
+    ::Digest::SHA256.hexdigest(ENV["SIDEKIQ_PASSWORD"])
+  )
+end
+
+mount Sidekiq::Web => '/sidekiq'
+```
+
 ### TvShowsSyncWorker
 - Scheduled to run daily at 2 AM UTC using sidekiq-cron
 - Fetches latest TV show data from TVMaze API
