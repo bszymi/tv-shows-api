@@ -60,6 +60,37 @@ docker compose down
 
 ## Database Schema
 
+### Entity-Relationship Diagram
+
+```
+┌─────────────────────┐         ┌─────────────────────┐         ┌─────────────────────┐
+│   distributors      │    1    │     tv_shows        │    1    │   release_dates     │
+├─────────────────────┤ ◄─────┬─┤ (depends on         │ ◄─────┬─┤ (depends on         │
+│ id (PK)             │       │ │  distributor)       │       │ │  tv_show)           │
+│ name (unique)       │       │ ├─────────────────────┤       │ ├─────────────────────┤
+│ created_at          │       │ │ id (PK)             │       │ │ id (PK)             │
+│ updated_at          │       │ │ external_id (unique)│       │ │ tv_show_id (FK)     │
+└─────────────────────┘       │ │ name                │       │ │ country             │
+                              │ │ show_type           │       │ │ release_date        │
+                              │ │ language            │       │ │ created_at          │
+                              │ │ status              │       │ │ updated_at          │
+                              │ │ runtime             │       │ └─────────────────────┘
+                              │ │ premiered           │       │
+                              │ │ summary             │       │ Constraints:
+                              │ │ official_site       │       │ • unique([tv_show_id, country])
+                              │ │ image_url           │       │
+                              │ │ rating              │       *
+                              │ │ distributor_id (FK) ├───────┘
+                              │ │ created_at          │
+                              │ │ updated_at          │
+                              │ └─────────────────────┘
+                              │
+                              * Relationships:
+                                • 1 distributor → many tv_shows
+                                • 1 tv_show → many release_dates
+                                • Each release_date is unique per [tv_show, country]
+```
+
 ### Tables
 
 1. **distributors**
