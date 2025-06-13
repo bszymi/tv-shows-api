@@ -8,7 +8,7 @@ RSpec.describe 'analytics:run_examples', type: :task do
 
   let!(:distributor1) { Distributor.create!(name: 'HBO') }
   let!(:distributor2) { Distributor.create!(name: 'Netflix') }
-  
+
   let!(:show1) do
     TvShow.create!(
       external_id: 1001,
@@ -20,7 +20,7 @@ RSpec.describe 'analytics:run_examples', type: :task do
       distributor: distributor1
     )
   end
-  
+
   let!(:show2) do
     TvShow.create!(
       external_id: 1002,
@@ -45,7 +45,7 @@ RSpec.describe 'analytics:run_examples', type: :task do
     expect do
       # Top distributors query
       ActiveRecord::Base.connection.execute(<<~SQL)
-        SELECT 
+        SELECT#{' '}
           d.name as distributor_name,
           COUNT(t.id) as total_shows,
           AVG(t.rating) as avg_rating
@@ -62,14 +62,14 @@ RSpec.describe 'analytics:run_examples', type: :task do
       # Decade stats with window functions
       ActiveRecord::Base.connection.execute(<<~SQL)
         WITH decade_stats AS (
-          SELECT 
+          SELECT#{' '}
             EXTRACT(DECADE FROM premiered) * 10 as decade,
             COUNT(*) as show_count
-          FROM tv_shows 
+          FROM tv_shows#{' '}
           WHERE premiered IS NOT NULL
           GROUP BY EXTRACT(DECADE FROM premiered)
         )
-        SELECT 
+        SELECT#{' '}
           decade,
           show_count,
           SUM(show_count) OVER (ORDER BY decade ROWS UNBOUNDED PRECEDING) as running_total

@@ -9,7 +9,7 @@ RSpec.describe TvShow, type: :model do
   describe 'validations' do
     let(:distributor) { Distributor.create!(name: 'Test Network') }
     subject { TvShow.new(external_id: 1, name: 'Test Show', distributor: distributor) }
-    
+
     it { should validate_presence_of(:external_id) }
     it { should validate_uniqueness_of(:external_id) }
     it { should validate_presence_of(:name) }
@@ -27,19 +27,19 @@ RSpec.describe TvShow, type: :model do
 
     describe '.by_distributor' do
       it 'returns shows for the specified distributor' do
-        expect(TvShow.by_distributor('Network One')).to eq([show1])
+        expect(TvShow.by_distributor('Network One')).to eq([ show1 ])
       end
     end
 
     describe '.by_country' do
       it 'returns shows for the specified country' do
-        expect(TvShow.by_country('US')).to eq([show1])
+        expect(TvShow.by_country('US')).to eq([ show1 ])
       end
     end
 
     describe '.by_rating' do
       it 'returns shows with rating greater than or equal to specified value' do
-        expect(TvShow.by_rating(8.0)).to eq([show1])
+        expect(TvShow.by_rating(8.0)).to eq([ show1 ])
       end
     end
   end

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe TvShowsSyncWorker, type: :worker do
   describe '#perform' do
-    let(:sample_data) { [{ 'id' => 1, 'show' => { 'name' => 'Test Show' } }] }
+    let(:sample_data) { [ { 'id' => 1, 'show' => { 'name' => 'Test Show' } } ] }
 
     before do
       # Clean up any existing storage
@@ -40,7 +40,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
         it 'fetches and persists TV shows data successfully' do
           expect(TvMazeApiService).to receive(:fetch_full_schedule).with(force_full_refresh: false)
           expect(TvShowPersistenceService).to receive(:persist_from_api_data).with(api_response[:data])
-          
+
           subject.perform
         end
 
@@ -48,7 +48,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
           expect(Rails.logger).to receive(:info).with('Starting TV shows sync job (incremental: true)')
           expect(Rails.logger).to receive(:info).with('Processing 1 records (1 changes)')
           expect(Rails.logger).to receive(:info).with('TV shows sync completed successfully: 1 processed, 1 created, 0 updated')
-          
+
           subject.perform
         end
       end
@@ -72,7 +72,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
           expect(Rails.logger).to receive(:info).with('Starting TV shows sync job (incremental: true)')
           expect(Rails.logger).to receive(:info).with('No changes detected - 5 records skipped')
           expect(TvShowPersistenceService).not_to receive(:persist_from_api_data)
-          
+
           subject.perform
         end
       end
@@ -96,7 +96,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
           expect(Rails.logger).to receive(:info).with('Starting TV shows sync job (incremental: true)')
           expect(Rails.logger).to receive(:info).with('No new or changed data to process')
           expect(TvShowPersistenceService).not_to receive(:persist_from_api_data)
-          
+
           subject.perform
         end
       end
@@ -129,7 +129,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
         expect(Rails.logger).to receive(:info).with('Starting TV shows sync job (incremental: false)')
         expect(Rails.logger).to receive(:info).with('Processing 1 records (1 changes)')
         expect(Rails.logger).to receive(:info).with('TV shows sync completed successfully: 1 processed, 1 created, 0 updated')
-        
+
         subject.perform(force_full_refresh: true)
       end
     end
@@ -152,7 +152,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
         expect(Rails.logger).to receive(:error).with('Failed to fetch TV shows data: API connection failed')
         expect(Rails.logger).to receive(:error).with('TV shows sync job failed: API fetch failed: API connection failed')
         expect(Rails.logger).to receive(:error).with(kind_of(String)) # backtrace
-        
+
         expect { subject.perform }.to raise_error('API fetch failed: API connection failed')
       end
     end
@@ -174,7 +174,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
             processed: 1,
             created: 0,
             updated: 0,
-            errors: [{ show_id: 1, error: 'Validation failed' }]
+            errors: [ { show_id: 1, error: 'Validation failed' } ]
           }
         }
       end
@@ -189,7 +189,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
         expect(Rails.logger).to receive(:info).with('Processing 1 records (1 changes)')
         expect(Rails.logger).to receive(:error).with('TV shows sync completed with errors: 1 errors out of 1 processed')
         expect(Rails.logger).to receive(:error).with('Show ID 1: Validation failed')
-        
+
         expect { subject.perform }.not_to raise_error
       end
     end
@@ -203,7 +203,7 @@ RSpec.describe TvShowsSyncWorker, type: :worker do
         expect(Rails.logger).to receive(:info).with('Starting TV shows sync job (incremental: true)')
         expect(Rails.logger).to receive(:error).with('TV shows sync job failed: Unexpected error')
         expect(Rails.logger).to receive(:error).with(kind_of(String)) # backtrace
-        
+
         expect { subject.perform }.to raise_error('Unexpected error')
       end
     end

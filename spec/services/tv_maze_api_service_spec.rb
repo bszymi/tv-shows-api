@@ -86,7 +86,7 @@ RSpec.describe TvMazeApiService, type: :service do
       before do
         # Store initial data
         TvMazeDataStorage.write_data(sample_episode_data)
-        
+
         # Mock API to return same data
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
           .to_return(
@@ -133,7 +133,7 @@ RSpec.describe TvMazeApiService, type: :service do
       before do
         # Store initial data
         TvMazeDataStorage.write_data(sample_episode_data)
-        
+
         # Mock API to return updated data
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
           .to_return(
@@ -172,7 +172,7 @@ RSpec.describe TvMazeApiService, type: :service do
       before do
         # Store initial data
         TvMazeDataStorage.write_data(sample_episode_data)
-        
+
         # Mock API to return same data
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
           .to_return(
@@ -197,7 +197,7 @@ RSpec.describe TvMazeApiService, type: :service do
     context 'when the API request fails' do
       before do
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
-          .to_return(status: [500, 'Internal Server Error'])
+          .to_return(status: [ 500, 'Internal Server Error' ])
       end
 
       it 'returns error response' do
@@ -245,7 +245,7 @@ RSpec.describe TvMazeApiService, type: :service do
         # Create corrupted file
         allow(TvMazeDataStorage).to receive(:read_data).and_return(nil)
         allow(TvMazeDataStorage).to receive(:data_exists?).and_return(true)
-        
+
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
           .to_return(
             status: 200,
@@ -268,7 +268,7 @@ RSpec.describe TvMazeApiService, type: :service do
     context 'when storage write fails' do
       before do
         allow(TvMazeDataStorage).to receive(:write_data).and_return(false)
-        
+
         stub_request(:get, 'https://api.tvmaze.com/schedule/full')
           .to_return(
             status: 200,
@@ -304,17 +304,17 @@ RSpec.describe TvMazeApiService, type: :service do
 
     it 'maintains data integrity through read/write cycles' do
       original_data = sample_episode_data
-      
+
       TvMazeDataStorage.write_data(original_data)
       retrieved_data = TvMazeDataStorage.read_data
-      
+
       expect(retrieved_data).to eq(original_data)
     end
 
     it 'properly cleans up data' do
       TvMazeDataStorage.write_data(sample_episode_data)
       expect(TvMazeDataStorage.data_exists?).to be true
-      
+
       TvMazeDataStorage.delete_data
       expect(TvMazeDataStorage.data_exists?).to be false
     end

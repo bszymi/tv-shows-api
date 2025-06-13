@@ -7,7 +7,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
   describe 'GET /api/v1/tv_shows' do
     let!(:distributor1) { Distributor.create!(name: 'CBS') }
     let!(:distributor2) { Distributor.create!(name: 'NBC') }
-    
+
     let!(:show1) do
       TvShow.create!(
         external_id: 1,
@@ -22,7 +22,7 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
         distributor: distributor1
       )
     end
-    
+
     let!(:show2) do
       TvShow.create!(
         external_id: 2,
@@ -44,17 +44,17 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
     context 'without filters' do
       it 'returns all TV shows with pagination' do
         get '/api/v1/tv_shows', headers: headers
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows']).to be_an(Array)
         expect(json_response['tv_shows'].size).to eq(2)
-        
+
         # Check deterministic ordering (by name, then id)
         expect(json_response['tv_shows'][0]['name']).to eq('Show A')
         expect(json_response['tv_shows'][1]['name']).to eq('Show B')
-        
+
         # Check pagination metadata
         expect(json_response['meta']).to include(
           'current_page' => 1,
@@ -66,10 +66,10 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
       it 'includes associated data' do
         get '/api/v1/tv_shows', headers: headers
-        
+
         json_response = JSON.parse(response.body)
         first_show = json_response['tv_shows'][0]
-        
+
         expect(first_show).to include(
           'id' => show1.id,
           'external_id' => 1,
@@ -82,12 +82,12 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
           'summary' => 'Test summary 1',
           'rating' => '8.5'
         )
-        
+
         expect(first_show['distributor']).to include(
           'id' => distributor1.id,
           'name' => 'CBS'
         )
-        
+
         expect(first_show['release_dates']).to be_an(Array)
         expect(first_show['release_dates'][0]).to include(
           'country' => 'US',
@@ -99,9 +99,9 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
     context 'with distributor filter' do
       it 'returns shows for specified distributor' do
         get '/api/v1/tv_shows', headers: headers, params: { distributor: 'CBS' }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(1)
         expect(json_response['tv_shows'][0]['name']).to eq('Show A')
@@ -112,9 +112,9 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
     context 'with country filter' do
       it 'returns shows for specified country' do
         get '/api/v1/tv_shows', headers: headers, params: { country: 'UK' }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(1)
         expect(json_response['tv_shows'][0]['name']).to eq('Show B')
@@ -124,9 +124,9 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
     context 'with rating filter' do
       it 'returns shows with rating above minimum' do
         get '/api/v1/tv_shows', headers: headers, params: { min_rating: 8.0 }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(1)
         expect(json_response['tv_shows'][0]['name']).to eq('Show A')
@@ -148,9 +148,9 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
       it 'respects per_page parameter' do
         get '/api/v1/tv_shows', headers: headers, params: { per_page: 5 }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(5)
         expect(json_response['meta']).to include(
@@ -163,9 +163,9 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
       it 'respects page parameter' do
         get '/api/v1/tv_shows', headers: headers, params: { per_page: 5, page: 2 }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(5)
         expect(json_response['meta']).to include(
@@ -191,12 +191,12 @@ RSpec.describe 'Api::V1::TvShows', type: :request do
 
       it 'applies all filters correctly' do
         get '/api/v1/tv_shows', headers: headers, params: { distributor: 'CBS', country: 'US', min_rating: 8.0 }
-        
+
         expect(response).to have_http_status(:ok)
-        
+
         json_response = JSON.parse(response.body)
         expect(json_response['tv_shows'].size).to eq(2)
-        
+
         show_names = json_response['tv_shows'].map { |show| show['name'] }
         expect(show_names).to contain_exactly('Show A', 'Show C')
       end

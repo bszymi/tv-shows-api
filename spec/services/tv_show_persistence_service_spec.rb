@@ -30,7 +30,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
             'officialSite' => 'http://www.cbs.com/shows/under-the-dome/',
             'image' => { 'medium' => 'http://static.tvmaze.com/uploads/images/medium_portrait/0/1.jpg' },
             'rating' => { 'average' => 6.5 },
-            'network' => { 
+            'network' => {
               'name' => 'CBS',
               'country' => { 'code' => 'US' }
             },
@@ -59,7 +59,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
       it 'stores TV show attributes correctly' do
         subject
         tv_show = TvShow.first
-        
+
         expect(tv_show.external_id).to eq(1)
         expect(tv_show.name).to eq('Under the Dome')
         expect(tv_show.show_type).to eq('Scripted')
@@ -105,7 +105,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
             'name' => 'Updated Name',
             'type' => 'Scripted',
             'rating' => { 'average' => 8.5 },
-            'network' => { 
+            'network' => {
               'name' => 'CBS',
               'country' => { 'code' => 'US' }
             }
@@ -115,7 +115,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
 
       it 'updates existing TV show' do
         expect { subject }.not_to change(TvShow, :count)
-        
+
         existing_show.reload
         expect(existing_show.name).to eq('Updated Name')
         expect(existing_show.rating).to eq(8.5)
@@ -138,7 +138,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
             'show' => {
               'id' => 2,
               'name' => 'Test Show',
-              'network' => { 
+              'network' => {
                 'name' => 'Network',
                 'country' => { 'code' => 'UK' }
               }
@@ -154,7 +154,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
         expect(tv_show.external_id).to eq(2)
         expect(tv_show.name).to eq('Test Show')
         expect(tv_show.distributor.name).to eq('Network')
-        
+
         release_date = tv_show.release_dates.first
         expect(release_date.country).to eq('UK')
         expect(release_date.release_date).to eq(Date.parse('2023-01-01'))
@@ -237,7 +237,7 @@ RSpec.describe TvShowPersistenceService, type: :service do
       it 'stores TV show attributes correctly from embedded data' do
         subject
         tv_show = TvShow.first
-        
+
         expect(tv_show.external_id).to eq(5)
         expect(tv_show.name).to eq('Embedded Show')
         expect(tv_show.show_type).to eq('Comedy')

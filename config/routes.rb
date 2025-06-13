@@ -1,5 +1,5 @@
-require 'sidekiq/web'
-require 'sidekiq/cron/web'
+require "sidekiq/web"
+require "sidekiq/cron/web"
 
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -9,12 +9,12 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Sidekiq web interface
-  mount Sidekiq::Web => '/sidekiq'
+  mount Sidekiq::Web => "/sidekiq"
 
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :tv_shows, only: [:index]
+      resources :tv_shows, only: [ :index ]
     end
   end
 

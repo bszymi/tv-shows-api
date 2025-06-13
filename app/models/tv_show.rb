@@ -9,5 +9,5 @@ class TvShow < ApplicationRecord
 
   scope :by_distributor, ->(distributor_name) { joins(:distributor).where(distributors: { name: distributor_name }) }
   scope :by_country, ->(country) { joins(:release_dates).where(release_dates: { country: country }).distinct }
-  scope :by_rating, ->(min_rating) { where('rating >= ?', min_rating) }
+  scope :by_rating, ->(min_rating) { where("rating >= ?", min_rating) }
 end

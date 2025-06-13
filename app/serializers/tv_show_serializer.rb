@@ -1,5 +1,5 @@
 class TvShowSerializer < ActiveModel::Serializer
-  attributes :id, :external_id, :name, :show_type, :language, :status, 
+  attributes :id, :external_id, :name, :show_type, :language, :status,
              :runtime, :premiered, :summary, :official_site, :image_url, :rating
 
   belongs_to :distributor
