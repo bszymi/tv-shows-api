@@ -225,6 +225,101 @@ rails analytics:generate_sample_data
 rails analytics:run_examples
 ```
 
+## Incremental Data Processing
+
+The TV Shows API includes intelligent incremental data processing to minimize unnecessary database operations and API calls.
+
+### How It Works
+
+The system automatically:
+
+1. **First Run**: Downloads all data from TVMaze API and stores it locally (or in S3 for production)
+2. **Subsequent Runs**: Downloads new data, compares it with the stored version using SHA256 hashing
+3. **Change Detection**: Identifies only new or modified episodes using efficient diff algorithms
+4. **Selective Processing**: Processes only changed records, reducing database load
+5. **Storage Update**: Replaces the stored data with the new version after successful processing
+
+### Storage Configuration
+
+#### Local Development
+- **Path**: `storage/tvmaze_data.json`
+- **Format**: Pretty-printed JSON for easy debugging
+- **Automatic**: Directory creation and cleanup
+
+#### Production (S3)
+- **Bucket**: Set via `TV_MAZE_S3_BUCKET` environment variable (default: `tv-shows-api-data`)
+- **Key**: Set via `TV_MAZE_S3_KEY` environment variable (default: `tvmaze_data.json`)
+- **Fallback**: Automatically falls back to local storage if S3 is unavailable
+- **Credentials**: Uses IAM instance profiles in production, AWS credentials in development
+
+### Environment Variables
+
+```bash
+# Optional S3 configuration (production only)
+TV_MAZE_S3_BUCKET=your-bucket-name
+TV_MAZE_S3_KEY=tvmaze_data.json
+AWS_REGION=us-east-1
+
+# Development only (S3 fallback)
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+```
+
+### Manual Operations
+
+```bash
+# Run incremental sync (default behavior)
+TvShowsSyncWorker.perform_async
+
+# Force full refresh (ignores cached data)
+TvShowsSyncWorker.perform_async(force_full_refresh: true)
+
+# Check what data is currently cached
+TvMazeDataStorage.data_exists?
+TvMazeDataStorage.read_data&.size
+
+# Clear cached data
+TvMazeDataStorage.delete_data
+```
+
+### API Usage
+
+```ruby
+# Incremental processing (default)
+result = TvMazeApiService.fetch_full_schedule
+# Returns: { success: true, data: [...], count: N, changes: M, examined: Total }
+
+# Force full refresh
+result = TvMazeApiService.fetch_full_schedule(force_full_refresh: true)
+# Returns: { success: true, data: [...], count: N, storage_updated: true }
+
+# No changes detected
+# Returns: { success: true, data: [], count: 0, changes: 0, skipped: N }
+```
+
+### Performance Benefits
+
+- **Reduced API Load**: Only processes changed data
+- **Faster Sync Times**: Skips unchanged records entirely
+- **Lower Database Load**: Fewer INSERT/UPDATE operations
+- **Efficient Storage**: Compressed JSON with hash-based change detection
+- **Reliable Fallbacks**: Graceful handling of corrupted or missing cache files
+
+### Monitoring
+
+The system provides detailed logging for monitoring incremental processing:
+
+```
+[INFO] Starting TVMaze data fetch (force_full_refresh: false)
+[INFO] Checking for incremental changes
+[INFO] Data changes detected, finding differences
+[INFO] Found 15 changed episodes out of 1000 total
+[INFO] Updated storage with 1000 records (15 changes)
+[INFO] Processing 15 records (15 changes)
+[INFO] TV shows sync completed successfully: 15 processed, 5 created, 10 updated
+[INFO] Incremental processing: 15 changes out of 1000 examined
+```
+
 ## Deployment
 
 ### AWS Deployment
