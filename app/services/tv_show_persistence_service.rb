@@ -27,6 +27,12 @@ class TvShowPersistenceService
 
   private
 
+  # Normalize show extraction for different TVMaze data formats
+  # Handles episode-centric /_embedded/show, episode-centric /show, and direct show data
+  def extract_show(show_data)
+    show_data.dig('_embedded', 'show') || show_data['show'] || show_data
+  end
+
   def process_show(show_data, stats)
     stats[:processed] += 1
 
@@ -50,33 +56,32 @@ class TvShowPersistenceService
   end
 
   def extract_network_name(show_data)
-    show_data.dig('show', 'network', 'name') ||
-      show_data.dig('network', 'name') ||
-      show_data.dig('show', 'webChannel', 'name') ||
-      show_data.dig('webChannel', 'name')
+    show = extract_show(show_data)
+    show.dig('network', 'name') || show.dig('webChannel', 'name')
   end
 
   def find_or_initialize_tv_show(show_data, distributor)
-    external_id = show_data.dig('show', 'id') || show_data['id']
+    show = extract_show(show_data)
+    external_id = show['id']
     TvShow.find_or_initialize_by(external_id: external_id) do |tv_show|
       tv_show.distributor = distributor
     end
   end
 
   def update_tv_show_attributes(tv_show, show_data)
-    show_info = show_data['show'] || show_data
+    show = extract_show(show_data)
 
     tv_show.assign_attributes(
-      name: show_info['name'],
-      show_type: show_info['type'],
-      language: show_info['language'],
-      status: show_info['status'],
-      runtime: show_info['runtime'],
-      premiered: parse_date(show_info['premiered']),
-      summary: clean_summary(show_info['summary']),
-      official_site: show_info['officialSite'],
-      image_url: show_info.dig('image', 'medium'),
-      rating: show_info.dig('rating', 'average')
+      name: show['name'],
+      show_type: show['type'],
+      language: show['language'],
+      status: show['status'],
+      runtime: show['runtime'],
+      premiered: parse_date(show['premiered']),
+      summary: clean_summary(show['summary']),
+      official_site: show['officialSite'],
+      image_url: show.dig('image', 'medium'),
+      rating: show.dig('rating', 'average')
     )
   end
 
@@ -92,10 +97,9 @@ class TvShowPersistenceService
   end
 
   def extract_country(show_data)
-    show_data.dig('show', 'network', 'country', 'code') ||
-      show_data.dig('network', 'country', 'code') ||
-      show_data.dig('show', 'webChannel', 'country', 'code') ||
-      show_data.dig('webChannel', 'country', 'code') ||
+    show = extract_show(show_data)
+    show.dig('network', 'country', 'code') ||
+      show.dig('webChannel', 'country', 'code') ||
       'US' # Default fallback
   end
 

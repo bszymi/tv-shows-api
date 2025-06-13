@@ -197,5 +197,83 @@ RSpec.describe TvShowPersistenceService, type: :service do
         expect(result[:stats][:created]).to eq(0)
       end
     end
+
+    context 'when processing episode-centric data with _embedded show' do
+      let(:api_data) do
+        [
+          {
+            'id' => 1,
+            'airdate' => '2024-01-15',
+            'airstamp' => '2024-01-15T21:00:00+00:00',
+            '_embedded' => {
+              'show' => {
+                'id' => 5,
+                'name' => 'Embedded Show',
+                'type' => 'Comedy',
+                'language' => 'English',
+                'status' => 'Running',
+                'runtime' => 30,
+                'premiered' => '2024-01-01',
+                'summary' => '<p>A test show with embedded format.</p>',
+                'officialSite' => 'https://example.com/embedded-show',
+                'image' => { 'medium' => 'https://example.com/image.jpg' },
+                'rating' => { 'average' => 8.2 },
+                'network' => {
+                  'name' => 'Comedy Central',
+                  'country' => { 'code' => 'US' }
+                }
+              }
+            }
+          }
+        ]
+      end
+
+      it 'creates TV show from embedded show data' do
+        expect { subject }.to change(TvShow, :count).by(1)
+                          .and change(Distributor, :count).by(1)
+                          .and change(ReleaseDate, :count).by(1)
+      end
+
+      it 'stores TV show attributes correctly from embedded data' do
+        subject
+        tv_show = TvShow.first
+        
+        expect(tv_show.external_id).to eq(5)
+        expect(tv_show.name).to eq('Embedded Show')
+        expect(tv_show.show_type).to eq('Comedy')
+        expect(tv_show.language).to eq('English')
+        expect(tv_show.status).to eq('Running')
+        expect(tv_show.runtime).to eq(30)
+        expect(tv_show.premiered).to eq(Date.parse('2024-01-01'))
+        expect(tv_show.summary).to eq('A test show with embedded format.')
+        expect(tv_show.official_site).to eq('https://example.com/embedded-show')
+        expect(tv_show.image_url).to eq('https://example.com/image.jpg')
+        expect(tv_show.rating).to eq(8.2)
+      end
+
+      it 'creates distributor from embedded network data' do
+        subject
+        distributor = Distributor.first
+        expect(distributor.name).to eq('Comedy Central')
+      end
+
+      it 'creates release date from episode data and embedded country' do
+        subject
+        release_date = ReleaseDate.first
+        expect(release_date.country).to eq('US')
+        expect(release_date.release_date).to eq(Date.parse('2024-01-15'))
+      end
+
+      it 'returns success response with correct stats' do
+        result = subject
+        expect(result[:success]).to be true
+        expect(result[:stats]).to include(
+          processed: 1,
+          created: 1,
+          updated: 0,
+          errors: []
+        )
+      end
+    end
   end
 end
