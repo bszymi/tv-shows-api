@@ -37,15 +37,17 @@ rails server
 
 ### Docker Setup
 
+> **Note:** This project uses Docker Compose v2 syntax (without the `version` attribute in docker-compose.yml) for better compatibility and future-proofing.
+
 1. Build and start services:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 2. In another terminal, create and migrate the database:
 ```bash
-docker-compose exec web rails db:create
-docker-compose exec web rails db:migrate
+docker compose exec web bin/rails db:create
+docker compose exec web bin/rails db:migrate
 ```
 
 3. Access the application at http://localhost:3000
@@ -53,7 +55,7 @@ docker-compose exec web rails db:migrate
 
 4. Stop services:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ## Database Schema
@@ -263,12 +265,23 @@ ORDER BY unique_shows DESC;
 ```
 
 ### Running Analytics
+
+**Local Development:**
 ```bash
 # Generate sample data for testing
 rails analytics:generate_sample_data
 
 # Run analytical query examples
 rails analytics:run_examples
+```
+
+**Docker:**
+```bash
+# Generate sample data for testing
+docker compose exec web bin/rails analytics:generate_sample_data
+
+# Run analytical query examples
+docker compose exec web bin/rails analytics:run_examples
 ```
 
 ## Incremental Data Processing
@@ -505,9 +518,17 @@ Authentication credentials can be configured via:
    ```
 
 2. **Rails Credentials** (encrypted):
+   
+   **Local Development:**
    ```bash
    rails credentials:edit
    ```
+   
+   **Docker:**
+   ```bash
+   docker compose exec web bin/rails credentials:edit
+   ```
+   
    ```yaml
    api_username: your_username
    api_password: your_secure_password
@@ -724,7 +745,23 @@ The application includes comprehensive tests covering:
 
 ### Common Issues
 
-1. **Database connection errors**
+1. **Docker Rails Command Issues**
+   
+   If you see `exec: "rails": executable file not found in $PATH`, make sure you are using `bin/rails` or `bundle exec rails` inside the container.
+   
+   ```bash
+   # Correct usage with binstub
+   docker compose exec web bin/rails db:create
+   docker compose exec web bin/rails db:migrate
+   
+   # Alternative with bundle exec
+   docker compose exec web bundle exec rails db:create
+   docker compose exec web bundle exec rails db:migrate
+   ```
+
+2. **Database connection errors**
+   
+   **Local Development:**
    ```bash
    # Check database configuration
    rails db:migrate:status
@@ -732,8 +769,19 @@ The application includes comprehensive tests covering:
    # Test connection
    rails runner "puts ActiveRecord::Base.connection.execute('SELECT 1')"
    ```
+   
+   **Docker:**
+   ```bash
+   # Check database configuration
+   docker compose exec web bin/rails db:migrate:status
+   
+   # Test connection
+   docker compose exec web bin/rails runner "puts ActiveRecord::Base.connection.execute('SELECT 1')"
+   ```
 
-2. **Redis connection issues**
+3. **Redis connection issues**
+   
+   **Local Development:**
    ```bash
    # Test Redis connection
    rails runner "puts Sidekiq.redis(&:ping)"
@@ -741,8 +789,17 @@ The application includes comprehensive tests covering:
    # Check Sidekiq status
    bundle exec sidekiq
    ```
+   
+   **Docker:**
+   ```bash
+   # Test Redis connection
+   docker compose exec web bin/rails runner "puts Sidekiq.redis(&:ping)"
+   
+   # Check Sidekiq status
+   docker compose logs sidekiq
+   ```
 
-3. **API authentication failures**
+4. **API authentication failures**
    ```bash
    # Test with curl
    curl -u api_user:secure_password http://localhost:3000/api/v1/tv_shows
@@ -762,6 +819,7 @@ config.log_level = :debug
 
 ### Performance Debugging
 
+**Local Development:**
 ```bash
 # Database query analysis
 rails runner "puts TvShow.by_rating(8.0).to_sql"
@@ -771,6 +829,18 @@ rails runner "puts TvShow.joins(:distributor).explain"
 
 # Memory profiling (add memory_profiler gem)
 bundle exec ruby -r memory_profiler script/profile_memory.rb
+```
+
+**Docker:**
+```bash
+# Database query analysis
+docker compose exec web bin/rails runner "puts TvShow.by_rating(8.0).to_sql"
+
+# Explain query plans
+docker compose exec web bin/rails runner "puts TvShow.joins(:distributor).explain"
+
+# Memory profiling (add memory_profiler gem)
+docker compose exec web bundle exec ruby -r memory_profiler script/profile_memory.rb
 ```
 
 ## Contributing
