@@ -492,6 +492,7 @@ The project includes a comprehensive CI/CD pipeline using GitHub Actions:
 - **Environment protection** with approval workflows
 - **Automated deployments** with rollback capabilities
 - **Container scanning** and vulnerability assessment
+- **Binstubs** for consistent tool execution (bin/rubocop, bin/brakeman)
 
 #### Usage
 
